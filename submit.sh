@@ -3,6 +3,8 @@
 
 set -e
 
+ROOTDIR=$(dirname $0)
+
 verify_args() {
     if [[ "$#" != 2 ]]; then
         echo "Program usage: $0 <directory> <output>" >&2
@@ -17,7 +19,7 @@ submit() {
 build_images() {
     local directory="$1"
     local output_name="$2"
-    echo /home/sw/anaconda/bin/python ./create_movie.py --use-mencoder -o ${output_name} "$(getfiles ${directory})"
+    echo /home/sw/anaconda/bin/python ${ROOTDIR}/create_movie.py --use-mencoder -o ${output_name} "$(getfiles ${directory})"
 }
 
 getfiles() {
