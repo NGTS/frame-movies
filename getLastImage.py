@@ -136,7 +136,7 @@ for cam in cams:
 					logger.info("Making thumbnail %s --> %s" % (pngfile,thumbfile))
 					
 					# rescale the png to make it smaller
-					os.system('/usr/local/bin/convert %s -resize 50%% %s' % (pngfile,thumbsize,pngfile))
+					os.system('/usr/local/bin/convert %s -resize 50%% %s' % (pngfile,pngfile))
 					logger.info("Rescaling larger image %s by 50%%" % (pngfile))
 					
 					try:
