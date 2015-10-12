@@ -83,6 +83,9 @@ def getDasLoc():
 		
 getDasLoc()
 
+# remove when 806 is working
+das[806]=None
+
 # check all machines are up
 cont=0
 for i in das:
