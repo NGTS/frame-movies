@@ -32,6 +32,7 @@ if me == "ops":
 	convert_loc="/usr/local/bin"
 	cron_dir="/usr/local/cron/work"
 	web_dir="/home/ops/ngts/prism/monitor/img"
+	thumbsize=15 # scaling percentage
 else:
 	print "Whoami!?"
 	sys.exit(1)
@@ -99,10 +100,6 @@ if cont > 0:
 # connect to database
 conn=pymysql.connect(host='ds',db='ngts_ops')
 cur=conn.cursor()
-		
-# get the actions from yesterday
-#qry="SELECT action_id,camera_id,action FROM action_list WHERE schedule_start_utc BETWEEN date_sub(now(), INTERVAL 1 DAY) AND now()"
-#cur.execute(qry)
 
 os.chdir(topdir)	
 for cam in cams:
@@ -128,10 +125,15 @@ for cam in cams:
 			 	if pngfile not in os.listdir('%s/last_imgs/%s/' % (cron_dir,cam)):
 					create_movie([t[-1]],images_directory='%s/last_imgs/%s' % (cron_dir,cam),
 						no_time_series=True,include_increment=False,clobber_images_directory=False,resize_factor=4)
-				
+					
 					here=os.getcwd()
 					os.chdir("%s/last_imgs/%s" % (cron_dir,cam))
 					logger.info("Moving to %s/last_imgs/%s" % (cron_dir,cam))
+					
+					# make a thumbnail 
+					thumbfile="%s.%.2f.png" % (t[-1],(thumbsize/100.))
+					os.system('/usr/local/bin/convert %s -resize %d% %s' % (pngfile,thumbsize,thumbfile))
+					logger.info("MAking thumbnail %s --> %s" % (pngfile,thumbfile))
 					
 					try:
 						f=open('last_img.log').readline()
@@ -142,6 +144,9 @@ for cam in cams:
 					if f != pngfile:
 						os.system('cp %s %s/cam_%s.png' % (pngfile,web_dir,cam))
 						logger.info("Copying %s to %s/cam_%s.png" % (pngfile,web_dir,cam))
+						os.system('cp %s %s/cam_%s_s.png' % (thumbfile,web_dir,cam))
+						logger.info("Copying %s to %s/cam_%s_s.png" % (thumbfile,web_dir,cam))
+						
 						f3=open('last_img.log','w')
 						f3.write(pngfile)
 						f3.close()

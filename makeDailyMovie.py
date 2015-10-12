@@ -363,6 +363,14 @@ def main():
 	args=ArgParse()
 	getDasLoc()
 	
+	me=getpass.getuser()
+	if me == 'James':
+		movie_dir="/Volumes/DATA/ngts/paranal/12Cams/movie/"
+		top_dir="/Volumes/DATA/ngts/paranal/12Cams/"
+	if me == 'ops':
+		movie_dir="/ngts/aux07/movie/"
+		top_dir="/ngts/"
+	
 	# check all machines are up
 	cont=0
 	for i in das:
