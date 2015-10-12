@@ -132,7 +132,7 @@ for cam in cams:
 					
 					# make a thumbnail 
 					thumbfile="%s.%.2f.png" % (t[-1],(thumbsize/100.))
-					os.system('/usr/local/bin/convert %s -resize %d% %s' % (pngfile,thumbsize,thumbfile))
+					os.system('/usr/local/bin/convert %s -resize %d%% %s' % (pngfile,thumbsize,thumbfile))
 					logger.info("MAking thumbnail %s --> %s" % (pngfile,thumbfile))
 					
 					try:
