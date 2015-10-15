@@ -96,7 +96,7 @@ def checkAstrometry():
 		os.mkdir('junk')
 	
 	fails=[]
-	for i in image_id:
+	for i in image_id_a:
 		# unzip if compressed
 		zipfile='IMAGE%s.fits.bz2' % (i)
 		if os.path.exists(zipfile):
@@ -155,7 +155,7 @@ def makePNGs():
 		image_id_a.append(row[1])
 		camera_id_a.append(row[2])
 		das=os.popen('ngwhereis %s' % (row[2])).readlines()[0].split()[0]	
-		imfile="IMAGE%s.fits" % (image_id)
+		imfile="IMAGE%s.fits" % (row[1])
 		if not args.debug:
 			create_movie([imfile],images_directory="%s/pngs" % (w_dir),no_time_series=True,include_increment=False,clobber_images_directory=False,resize_factor=4)
 			logging.info("%s Making PNG of %s" % (dt.utcnow().isoformat(),imfile))
