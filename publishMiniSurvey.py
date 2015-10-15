@@ -1,3 +1,6 @@
+# script to publish the mini survey data
+# check the astrometry and make pngs for the webpages
+
 import os, sys, time, logging, getpass, pymysql
 import argparse as ap
 from datetime import datetime as dt
@@ -72,6 +75,7 @@ def astrometry(image,scale_l,scale_h,ra=None,dec=None,radius=5.0,cpulimit=90):
 # and/or return fields to the pile for another attempt
 def checkAstrometry():
 	qry="SELECT action_id,image_id,camera_id FROM mini_survey WHERE done=1 AND astrometry=0"
+	logging.info('%s %s' % (dt.utcnow().isoformat(),qry))
 	cur=db.cursor()
 	cur.execute(qry)
 
@@ -81,7 +85,9 @@ def checkAstrometry():
 		image_id_a.append(row[1])
 		camera_id_a.append(row[2])
 		das=os.popen('ngwhereis %s' % (row[2])).readlines()[0].split()[0]
-		os.system('cp /ngts/%s/action%s_observeField/IMAGE%s* %s/' % (das,action_id,image_id,w_dir))
+		cp_comm='cp /ngts/%s/action%s_observeField/IMAGE%s* %s/' % (das,row[0],row[1],w_dir)
+		os.system(cp_comm)
+		logging.info('%s %s' % (dt.utcnow().isoformat(),cp_comm))
 		
 	here=os.getcwd()
 	os.chdir(w_dir)
@@ -135,9 +141,10 @@ def checkAstrometry():
 def makePNGs():
 	here=os.getcwd()
 	os.chdir(wdir)
+	logging.info('%s Moving to %s' % (dt.utcnow().isoformat(),w_dir))	
 	
 	qry="SELECT action_id,image_id,camera_id FROM mini_survey WHERE done=1 AND astrometry=1 AND png=0"
-	print qry
+	logging.info('%s %s' % (dt.utcnow().isoformat(),qry))
 	cur=db.cursor()
 	cur2=db.cursor()
 	cur.execute(qry)
@@ -151,15 +158,17 @@ def makePNGs():
 		imfile="IMAGE%s.fits" % (image_id)
 		if not args.debug:
 			create_movie([imfile],images_directory="%s/pngs" % (w_dir),no_time_series=True,include_increment=False,clobber_images_directory=False,resize_factor=4)
-		
+			logging.info("%s Making PNG of %s" % (dt.utcnow().isoformat(),imfile))
+			
 		qry2="UPDATE mini_survey SET png=1 WHERE image_id=%d" % (row[1])
-		print qry2
+		logging.info("%s %s") % (dt.utcnow().isoformat(),qry2))
 		if not args.debug:
 			cur2.execute(qry2)
 			db.commit()
 		
 	os.chdir(here)
-
+	logging.info('%s Returning to %s' % (dt.utcnow().isoformat(),here))	
+	
 def main():
 	checkAstrometry()
 	makePNGs()
