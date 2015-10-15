@@ -159,9 +159,12 @@ def makePNGs():
 			db.commit()
 		
 	os.chdir(here)
-	return
 
 def main():
 	checkAstrometry()
 	makePNGs()
+	
+
+if __name__=="__main__":
+	main()
 	
