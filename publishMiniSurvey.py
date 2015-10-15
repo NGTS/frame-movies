@@ -6,6 +6,7 @@ import argparse as ap
 from datetime import datetime as dt
 from datetime import timedelta
 from astropy.time import Time
+from astropy.io import fits
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz
 import astropy.units as u
 import numpy as np
