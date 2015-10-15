@@ -1,7 +1,7 @@
 # script to publish the mini survey data
 # check the astrometry and make pngs for the webpages
 
-import os, sys, time, logging, getpass, pymysql
+import os, sys, time, logging, getpass, pymysql, warnings
 import argparse as ap
 from datetime import datetime as dt
 from datetime import timedelta
@@ -32,6 +32,9 @@ else:
 
 # logging set up
 logging.basicConfig(filename=logfile,level=logging.DEBUG, format='%(levelname)10s - %(message)s')
+
+# ignore warnings from astropy
+warnings.filterwarnings('ignore')
 
 # function to parse the command line
 def argParse():
@@ -86,10 +89,14 @@ def checkAstrometry():
 		image_id_a.append(row[1])
 		camera_id_a.append(row[2])
 		das=os.popen('ngwhereis %s' % (row[2])).readlines()[0].split()[0]
-		cp_comm='cp /ngts/%s/action%s_observeField/IMAGE%s* %s/' % (das,row[0],row[1],w_dir)
-		os.system(cp_comm)
-		logging.info('%s %s' % (dt.utcnow().isoformat(),cp_comm))
 		
+		if os.path.exists('%s/IMAGE%s.fits' % (w_dir,row[1])) == False and os.path.exists('%s/IMAGE%s.fits.bz2' % (w_dir,row[1])) == False:
+			cp_comm='cp /ngts/%s/action%s_observeField/IMAGE%s* %s/' % (das,row[0],row[1],w_dir)
+			os.system(cp_comm)
+			logging.info('%s %s' % (dt.utcnow().isoformat(),cp_comm))
+		else:
+			logging.info('%s IMAGE%s.fits(.bz2) exisits in %s' % (dt.utcnow().isoformat(),row[1],w_dir))
+	
 	here=os.getcwd()
 	os.chdir(w_dir)
 	logging.info('%s Moving to %s' % (dt.utcnow().isoformat(),w_dir))
