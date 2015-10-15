@@ -161,7 +161,7 @@ def makePNGs():
 			logging.info("%s Making PNG of %s" % (dt.utcnow().isoformat(),imfile))
 			
 		qry2="UPDATE mini_survey SET png=1 WHERE image_id=%d" % (row[1])
-		logging.info("%s %s") % (dt.utcnow().isoformat(),qry2))
+		logging.info("%s %s" % (dt.utcnow().isoformat(),qry2))
 		if not args.debug:
 			cur2.execute(qry2)
 			db.commit()
