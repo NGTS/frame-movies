@@ -24,7 +24,7 @@ if me == "James":
 elif me=="ops":
 	db=pymysql.connect(host='ds',db='ngts_ops')
 	logfile="/usr/local/cron/logs/ngminisurvey.log"
-	w_dir="/usr/local/cron/work/minisurvey"
+	w_dir="/ngts/staging/archive/minisurvey"
 	astrom_loc="/usr/local/astrometry.net/bin/"
 else:
 	print "WHOAMI!?"
@@ -165,7 +165,7 @@ def makePNGs():
 		das=os.popen('ngwhereis %s' % (row[2])).readlines()[0].split()[0]	
 		imfile="IMAGE%s.fits" % (row[1])
 		if not args.debug:
-			create_movie([imfile],images_directory="%s/pngs" % (w_dir),no_time_series=True,include_increment=False,clobber_images_directory=False,resize_factor=4)
+			create_movie([imfile],images_directory="%s/pngs" % (w_dir),no_time_series=True,include_increment=False,clobber_images_directory=False,resize_factor=4,multiprocess=False)
 			logging.info("%s Making PNG of %s" % (dt.utcnow().isoformat(),imfile))
 			
 		qry2="UPDATE mini_survey SET png=1 WHERE image_id=%d" % (row[1])

@@ -124,7 +124,7 @@ for cam in cams:
 				logger.info("PNG file to make is %s.png" % (t[-1]))
 			 	if pngfile not in os.listdir('%s/last_imgs/%s/' % (cron_dir,cam)):
 					create_movie([t[-1]],images_directory='%s/last_imgs/%s' % (cron_dir,cam),
-						no_time_series=True,include_increment=False,clobber_images_directory=False,resize_factor=4)
+						no_time_series=True,include_increment=False,clobber_images_directory=False,resize_factor=4,multiprocess=False)
 					
 					here=os.getcwd()
 					os.chdir("%s/last_imgs/%s" % (cron_dir,cam))
