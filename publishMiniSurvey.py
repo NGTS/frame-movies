@@ -124,7 +124,7 @@ def checkAstrometry():
 		# check output
 		if ra_a == None or dec_a == None:
 			logging.error('%s COULD NOT DO ASTROMETRY FOR %s' % (dt.utcnow().isoformat(),imfile))
-			qry="UPDATE mini_survey SET done=0, fails=ISNULL(fails,0)+1 WHERE image_id='%s'" % (i)
+			qry="UPDATE mini_survey SET done=0, fails=COALESCE(fails,0)+1 WHERE image_id='%s'" % (i)
 			logging.info("%s REMOVING %s FROM %s " % (dt.utcnow().isoformat(),imfile,w_dir))
 			os.system('mv *%s* junk/' % (i))
 		else:			
@@ -132,16 +132,16 @@ def checkAstrometry():
 			sep_ang=c.separation(a).arcmin
 			if sep_ang>10:
 				logging.error("%s IMAGE IS OFF BY >10 ARCMIN (%.2f), REPEAT FIELD" % (dt.utcnow().isoformat(),sep_ang))
-				qry="UPDATE mini_survey SET done=0, fails=ISNULL(fails,0)+1 WHERE image_id='%s'" % (i)
+				qry="UPDATE mini_survey SET done=0, fails=COALESCE(fails,0)+1 WHERE image_id='%s'" % (i)
 				logging.info("%s REMOVING %s FROM %s " % (dt.utcnow().isoformat(),imfile,w_dir))
 				os.system('mv *%s* junk/' % (i))
 			else:
 				logging.info("%s IMAGE%s.fits solved with error of %.2f arcmin" % (dt.utcnow().isoformat(),i,sep_ang))
 				qry="UPDATE mini_survey SET astrometry=1 WHERE image_id='%s'" % (i)
 			
-			if not args.debug:
-				cur.execute(qry)
-				db.commit()
+		if not args.debug:
+			cur.execute(qry)
+			db.commit()
 			
 	os.chdir(here)
 	logging.info('%s Returning to %s' % (dt.utcnow().isoformat(),here))	
