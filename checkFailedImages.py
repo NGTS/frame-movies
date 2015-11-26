@@ -21,10 +21,9 @@ def getAstromFromFile(astromfile):
 
 def astrometry(image,scale_l,scale_h,ra=None,dec=None,radius=5.0,cpulimit=90):
 	astromfile="astrometry_%s.log" % (image)
-		command = "%s/solve-field %s --scale-low %s --scale-high %s --cpulimit %s --no-plots --overwrite" % (astrom_loc,image, scale_l, scale_h, cpulimit)
-		command = "%s > %s" % (command,astromfile)
-		os.system(command)
-	
+	command = "%s/solve-field %s --scale-low %s --scale-high %s --cpulimit %s --no-plots --overwrite" % (astrom_loc,image, scale_l, scale_h, cpulimit)
+	command = "%s > %s" % (command,astromfile)
+	os.system(command)
 	ra,dec=getAstromFromFile(astromfile)							
 	return ra,dec
 
