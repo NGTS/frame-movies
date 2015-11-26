@@ -65,9 +65,9 @@ def astrometry(image,scale_l,scale_h,ra=None,dec=None,radius=5.0,cpulimit=90):
 	astromfile="astrometry_%s.log" % (image)
 	if os.path.exists(astromfile) == False:
 		if ra and dec:
-			command = "%s/solve-field %s --ra %s -- dec %s --radius %s --scale-low %s --scale-high %s --cpulimit %s --no-plots --overwrite" % (astrom_loc,image, ra, dec, radius, scale_l, scale_h, cpulimit)
+			command = "%s/solve-field %s --ra %s -- dec %s --radius %s --scale-low %s --scale-high %s --cpulimit %s --no-plots --overwrite --use-sextractor" % (astrom_loc,image, ra, dec, radius, scale_l, scale_h, cpulimit)
 		else:
-			command = "%s/solve-field %s --scale-low %s --scale-high %s --cpulimit %s --no-plots --overwrite" % (astrom_loc,image, scale_l, scale_h, cpulimit)
+			command = "%s/solve-field %s --scale-low %s --scale-high %s --cpulimit %s --no-plots --overwrite --use-sextractor" % (astrom_loc,image, scale_l, scale_h, cpulimit)
 		
 		command = "%s > %s" % (command,astromfile)
 		os.system(command)
