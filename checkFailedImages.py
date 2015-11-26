@@ -3,6 +3,9 @@
 import os
 import glob as g
 
+w_dir="/ngts/staging/archive/minisurvey"
+astrom_loc="/usr/local/astrometry.net/bin/"
+
 # read in astrometry.net log files
 def getAstromFromFile(astromfile):
 	f = open(astromfile, "r").readlines()
