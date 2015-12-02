@@ -1,5 +1,6 @@
 #!/bin/tcsh
 #$ -M j.j.mccormac@warwick.ac.uk
+#$ -N pngs801
 #$ -m abe
 #$ -r y
 #$ -o /usr/local/cron/logs/makeDailyMovie_pngs801.log
