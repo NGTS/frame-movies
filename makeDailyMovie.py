@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/python/bin/python
 ###############################################################################
 #                                                                             #
 #            Script to make a movie from the previous night's images          #
