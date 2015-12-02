@@ -1,0 +1,10 @@
+#!/bin/tcsh
+#$ -M ngtsops@warwick.ac.uk
+#$ -N pngs805
+#$ -m abe
+#$ -r y
+#$ -o /usr/local/cron/logs/makeDailyMovie_pngs805.log
+#$ -e /usr/local/cron/logs/makeDailyMovie_pngs805.log
+echo "Start - `date`"
+/usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --pngs 805
+echo "Finish - `date`"

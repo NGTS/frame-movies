@@ -1,5 +1,5 @@
 #!/bin/tcsh
-#$ -M j.j.mccormac@warwick.ac.uk
+#$ -M ngtsops@warwick.ac.uk
 #$ -N pngs801
 #$ -m abe
 #$ -r y
