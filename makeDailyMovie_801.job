@@ -1,0 +1,9 @@
+#!/bin/tcsh
+#$ -M j.j.mccormac@warwick.ac.uk
+#$ -m abe
+#$ -r y
+#$ -o /usr/local/cron/logs/makeDailyMovie_pngs801.log
+#$ -e /usr/local/cron/logs/makeDailyMovie_pngs801.log
+echo "Start - `date`"
+/usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --pngs 801
+echo "Finish - `date`"
