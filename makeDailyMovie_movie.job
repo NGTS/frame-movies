@@ -1,0 +1,11 @@
+#!/bin/tcsh
+#$ -M ngtsops@warwick.ac.uk
+#$ -N movie
+#$ -m abe
+#$ -hold_jid tile
+#$ -r y
+#$ -o /usr/local/cron/logs/makeDailyMovie_movie.log
+#$ -e /usr/local/cron/logs/makeDailyMovie_movie.log
+echo "Start - `date`"
+/usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --movie
+echo "Finish - `date`"
