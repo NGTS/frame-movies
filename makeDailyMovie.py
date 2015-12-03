@@ -45,7 +45,7 @@ if me == 'James':
 	movie_dir="/Volumes/DATA/ngts/paranal/12Cams/movie/"
 	top_dir="/Volumes/DATA/ngts/paranal/12Cams/"
 if me == 'ops':
-	movie_dir="/ngts/aux07/movie/"
+	movie_dir="/ngts/staging/archive/movie/"
 	top_dir="/ngts/"
 
 # empty dictionary for the actions for each camera
@@ -102,6 +102,7 @@ def ArgParse():
 	parser.add_argument("--pngs",help="make the PNG files")
 	parser.add_argument("--montage",help="montage all PNG files",action="store_true")
 	parser.add_argument("--movie",help="make movie from montaged PNG files",action="store_true")
+	parser.add_argument("--tidy",help="tidy up pngs?",action="store_true")
 	args=parser.parse_args()
 	return args
 
@@ -363,13 +364,13 @@ def main():
 	args=ArgParse()
 	getDasLoc()
 	
-	me=getpass.getuser()
-	if me == 'James':
-		movie_dir="/Volumes/DATA/ngts/paranal/12Cams/movie/"
-		top_dir="/Volumes/DATA/ngts/paranal/12Cams/"
-	if me == 'ops':
-		movie_dir="/ngts/aux07/movie/"
-		top_dir="/ngts/"
+	#me=getpass.getuser()
+	#if me == 'James':
+	#	movie_dir="/Volumes/DATA/ngts/paranal/12Cams/movie/"
+	#	top_dir="/Volumes/DATA/ngts/paranal/12Cams/"
+	#if me == 'ops':
+	#	movie_dir="/ngts/aux07/movie/"
+	#	top_dir="/ngts/"
 	
 	# check all machines are up
 	cont=0
@@ -415,9 +416,10 @@ def main():
 		os.system('scp %s jmcc@ngts.warwick.ac.uk:/srv/www/ngts/ops/daily_movies/' % (movie_name))
 		
 		# clean up the pngs
-		os.system('/bin/rm /ngts/aux07/movie/tiled*.png')
+		if args.tidy:
+			os.system('/bin/rm /ngts/aux07/movie/tiled*.png')
 		for i in das:
-			if das[i] != None:
+			if das[i] != None and args.tidy:
 				os.system('/bin/rm /ngts/aux07/movie/%s/IMAGE*.png' % (das[i]))
 		
 	t2=datetime.datetime.utcnow()
