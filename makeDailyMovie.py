@@ -22,6 +22,7 @@
 #		steps 3+4 happen on one aux node
 #
 # to do: 
+#	factor in 813
 #	install bz2 at paranal
 #
 
@@ -64,7 +65,6 @@ cams={801:[],
 	899:[]}
 
 # set the key to the das machines for each camera
-# need to modify this to use ngwhereis!
 das={801:None,
 	802:None,
 	803:None,
@@ -363,15 +363,7 @@ def make_movie(movie_dir,movie):
 def main():	
 	args=ArgParse()
 	getDasLoc()
-	
-	#me=getpass.getuser()
-	#if me == 'James':
-	#	movie_dir="/Volumes/DATA/ngts/paranal/12Cams/movie/"
-	#	top_dir="/Volumes/DATA/ngts/paranal/12Cams/"
-	#if me == 'ops':
-	#	movie_dir="/ngts/aux07/movie/"
-	#	top_dir="/ngts/"
-	
+		
 	# check all machines are up
 	cont=0
 	for i in das:
@@ -413,14 +405,15 @@ def main():
 		movie_name="%s/daily_movies/movie_%s.mp4" % (movie_dir,movie_date)
 		make_movie(movie_dir,movie_name)
 		# send to warwick webserver
-		os.system('scp %s jmcc@ngts.warwick.ac.uk:/srv/www/ngts/ops/daily_movies/' % (movie_name))
+		# this is now done with daily rsync of archive
+		#os.system('scp %s jmcc@ngts.warwick.ac.uk:/srv/www/ngts/ops/daily_movies/' % (movie_name))
 		
 		# clean up the pngs
 		if args.tidy:
-			os.system('/bin/rm /ngts/aux07/movie/tiled*.png')
+			os.system('/bin/rm %s/tiled*.png' % (movie_dir))
 		for i in das:
 			if das[i] != None and args.tidy:
-				os.system('/bin/rm /ngts/aux07/movie/%s/IMAGE*.png' % (das[i]))
+				os.system('/bin/rm %s/%s/IMAGE*.png' % (movie_dir,das[i]))
 		
 	t2=datetime.datetime.utcnow()
 	dt=(t2-t1).total_seconds()/60.
