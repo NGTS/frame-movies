@@ -7,5 +7,5 @@
 #$ -o /usr/local/cron/logs/makeDailyMovie_movie.log
 #$ -e /usr/local/cron/logs/makeDailyMovie_movie.log
 echo "Start - `date`"
-/usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --movie
+/usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --movie --tidy
 echo "Finish - `date`"
