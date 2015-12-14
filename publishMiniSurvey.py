@@ -168,7 +168,7 @@ def makePNGs():
 			create_movie([imfile],images_directory="%s/pngs" % (w_dir),no_time_series=True,include_increment=False,clobber_images_directory=False,resize_factor=4,multiprocess=False)
 			logging.info("%s Making PNG of %s" % (dt.utcnow().isoformat(),imfile))
 			
-		qry2="UPDATE mini_survey SET png=1 WHERE image_id=%d" % (row[1])
+		qry2="UPDATE mini_survey SET png=1,fails=0 WHERE image_id=%d" % (row[1])
 		logging.info("%s %s" % (dt.utcnow().isoformat(),qry2))
 		if not args.debug:
 			cur2.execute(qry2)
