@@ -127,6 +127,7 @@ def checkAstrometry():
 			qry="UPDATE mini_survey SET done=0, fails=COALESCE(fails,0)+1 WHERE image_id='%s'" % (i)
 			logging.info("%s REMOVING %s FROM %s " % (dt.utcnow().isoformat(),imfile,w_dir))
 			os.system('mv *%s* junk/' % (i))
+			fails.append(imfile)
 		else:			
 			a=SkyCoord(ra=ra_a, dec=dec_a, unit=(u.hourangle, u.deg), frame='icrs')
 			sep_ang=c.separation(a).arcmin
@@ -142,7 +143,8 @@ def checkAstrometry():
 		if not args.debug:
 			cur.execute(qry)
 			db.commit()
-			
+	print "Fails:"
+	print fails		
 	os.chdir(here)
 	logging.info('%s Returning to %s' % (dt.utcnow().isoformat(),here))	
 

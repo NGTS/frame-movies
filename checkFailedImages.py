@@ -1,5 +1,11 @@
 #!/usr/local/python/bin/python
 # script to check the previously unsolved files
+#
+# to do:
+#	Sanity check all the image_ids in the table actually have a png
+#	quick check shows 1349 in DB and 1353 pngs, 4 out, not bad
+#
+
 import os,sys,getpass,time
 import glob as g
 from astropy.io import fits
@@ -20,7 +26,7 @@ else:
 
 # check for w_dir
 if os.path.exists(w_dir)==False:
-	print "I'm dying.... (no w_dir)"
+	print "I'm dying... (no w_dir)"
 	sys.exit(1)
 
 # get command line args
