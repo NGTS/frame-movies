@@ -100,17 +100,18 @@ if cont > 0:
 # connect to database
 conn=pymysql.connect(host='ds',db='ngts_ops')
 cur=conn.cursor()
-
 os.chdir(topdir)	
 for cam in cams:
 	qry="SELECT image_id,raw_image_list.camera_id,raw_image_list.action_id,action FROM raw_image_list LEFT JOIN action_list USING (action_id) WHERE raw_image_list.camera_id=%d ORDER BY image_id DESC LIMIT 1 " % (cam)
 	cur.execute(qry)
-	
 	# get the action ids for each camera (and dome 899)
 	for row in cur:
 		if row[3] != 'stow':
 			cams[row[1]].append("action%s_%s" % (row[2],row[3]))
-	
+cur.close()
+conn.close()
+
+for cam in cams	
 	if len(cams[cam]) > 0 and cam != 899:
 		# go into the last action directory
 		if das[cam] != None:
@@ -171,6 +172,3 @@ for cam in cams:
 			
 			os.chdir('../../')
 			logger.info('Moving to ../../')
-
-cur.close()
-conn.close()
