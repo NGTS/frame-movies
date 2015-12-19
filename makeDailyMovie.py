@@ -167,7 +167,10 @@ def make_pngs(clist):
 				logger.warn('No images for %d' % (i))
 		else:
 			continue
-					
+	
+	if me=='ops':
+		cur.close()
+		conn.close()				
 
 def getDatetime(t):
 	'''
