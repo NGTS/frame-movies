@@ -171,3 +171,6 @@ for cam in cams:
 			
 			os.chdir('../../')
 			logger.info('Moving to ../../')
+
+cur.close()
+conn.close()
