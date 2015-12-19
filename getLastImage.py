@@ -111,7 +111,7 @@ for cam in cams:
 cur.close()
 conn.close()
 
-for cam in cams	
+for cam in cams:	
 	if len(cams[cam]) > 0 and cam != 899:
 		# go into the last action directory
 		if das[cam] != None:
