@@ -3,8 +3,8 @@
 #$ -N pngs806
 #$ -m abe
 #$ -r y
-#$ -o /usr/local/cron/logs/makeDailyMovie_pngs806.log
-#$ -e /usr/local/cron/logs/makeDailyMovie_pngs806.log
+#$ -o /ngts/staging/archive/logs/movie/makeDailyMovie_pngs806.log
+#$ -e /ngts/staging/archive/logs/movie/makeDailyMovie_pngs806.log
 echo "Start - `date`"
 /usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --pngs 806
 echo "Finish - `date`"

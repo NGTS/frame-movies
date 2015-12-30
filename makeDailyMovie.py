@@ -24,14 +24,18 @@
 # to do: 
 #	factor in 813
 #	install bz2 at paranal
+#	add checks for failed movie yesterday
+#	add uploading of movie to youtube
+#	log video ID to database for webpage displaying of embedded video
 #
 
-import os, os.path, datetime, sys, time
+import os, os.path, datetime, sys, time, logging
 from datetime import timedelta
+from datetime import datetime 
 import pymysql 
 import logging
 import glob as g
-from create_movie import create_movie, generate_movie, logger
+from create_movie import create_movie, generate_movie
 import numpy as np
 import getpass
 import argparse as ap
@@ -42,12 +46,10 @@ me=getpass.getuser()
 ###################### Globals #######################
 ######################################################
 
-if me == 'James':
-	movie_dir="/Volumes/DATA/ngts/paranal/12Cams/movie/"
-	top_dir="/Volumes/DATA/ngts/paranal/12Cams/"
-if me == 'ops':
-	movie_dir="/ngts/staging/archive/movie/"
-	top_dir="/ngts/"
+movie_dir="/ngts/staging/archive/movie/"
+top_dir="/ngts/"
+logfile="/ngts/staging/archive/logs/movie/"
+logging.basicConfig(filename=logfile,level=logging.DEBUG, format='%(levelname)10s - %(message)s')
 
 # empty dictionary for the actions for each camera
 cams={801:[],
@@ -106,8 +108,10 @@ def ArgParse():
 	args=parser.parse_args()
 	return args
 
-
 def getDasLoc():
+	'''
+	Find the camera/das locations
+	'''
 	for i in das:
 		if i != 899:
 			s=os.popen('/usr/local/paladin/bin/ngwhereis %d' % (i)).readline()
@@ -117,49 +121,43 @@ def getDasLoc():
 				das[i]=None
 			print s
 
+def getLastNight():
+	'''
+	Get the night int for last night
+	'''
+	tnow=datetime.utcnow()
+	if tnow.hour < 15:
+		delta=-1
+	else:
+		delta=0
+	return int((tnow+delta*timedelta(days=1)).strftime('%Y%m%d'))
 
 def make_pngs(clist):
 	'''
 	Get all the images from yesterday and make pngs 
 	for the daily montage. PNGs will be stored in 
 	
-	/ngts/dasXX/movie/ 
+	/ngts/staging/archive/movie/dasXX/ 
 	
 	These will be removed each day once the movie is made
 	'''
-	if me=='ops':
-		# connect to database
-		conn=pymysql.connect(host='ds',db='ngts_ops')
-		cur=conn.cursor()
-		
-		# get the actions from yesterday
-		qry="SELECT action_id,camera_id,action FROM action_list WHERE schedule_start_utc BETWEEN date_sub(now(), INTERVAL 1 DAY) AND now()"
+	db=pymysql.connect(host='ds',db='ngts_ops')
+	qry="SELECT action_id,camera_id,action FROM action_list WHERE night=%d" % (getLastNight())
+	with db.cursor() as cur:
 		cur.execute(qry)
-			
-		# get the action ids for each camera (and dome 899)
 		for row in cur:
 			if row[2] != 'stow':
 				cams[row[1]].append("action%s_%s" % (row[0],row[2]))
-		
-	if me=='James':
-		for i in cams:
-			cams[i].append('action100000_focusSweep')
-	
-	# remove the roof entry, not needed
 	del cams[899]
-	
-	# now we have the action ids go through and create the images for each 
 	for i in cams:
-		# only do those listed on command line
 		if str(i) in clist:
 			if len(cams[i]) > 0 and das[i] != None:
 				if os.path.exists(movie_dir) == False:
 					os.mkdir(movie_dir)	
 				logger.info(movie_dir)
 				for j in cams[i]:
-					logger.info("%s%s/%s/*.fits" % (top_dir,das[i],j))
+					logger.info("%s - %s%s/%s/*.fits" % (datetime.utcnow().isoformat(),top_dir,das[i],j))
 					t=sorted(g.glob('%s%s/%s/*.fits' % (top_dir,das[i],j)))
-					
 					camera_movie_dir=movie_dir+das[i]
 					create_movie(t,images_directory=camera_movie_dir,include_increment=False,
 						clobber_images_directory=False,resize_factor=4)
@@ -167,10 +165,7 @@ def make_pngs(clist):
 				logger.warn('No images for %d' % (i))
 		else:
 			continue
-	
-	if me=='ops':
-		cur.close()
-		conn.close()				
+	db.close()
 
 def getDatetime(t):
 	'''
@@ -183,10 +178,8 @@ def getDatetime(t):
 	hchk=int(t[16:18])
 	minchk=int(t[18:20])
 	schk=int(t[20:22])
-	
 	x=datetime.datetime(year=ychk,month=mthchk,
 		day=dchk,hour=hchk,minute=minchk,second=schk)
-	
 	return x
 	
 
@@ -195,14 +188,11 @@ def make_montage(movie_dir,das):
 	sync the pngs according to earliest image that day then
 	montage all the pngs with imagemagick
 	'''
-	
 	if os.path.exists(movie_dir) == False:
 		os.mkdir(movie_dir)
-	
 	os.chdir(movie_dir)		
-	logger.info("Moving to: " + os.getcwd())
+	logger.info("%s - Moving to: %s" % (datetime.utcnow().isoformat(),os.getcwd()))
 	
-	# empty lists for various things	
 	t_refs=[]
 	das_tracker=[]
 	imlens=[]
@@ -211,33 +201,27 @@ def make_montage(movie_dir,das):
 	# scan all folders looking for 
 	# earliest image of the night
 	##############################
-	
 	noimages=0
-	
 	for i in das:
 		if das[i] != None:
 			os.chdir(das[i])
-			logger.info("Moving to: " + os.getcwd())
-			
+			logger.info("%s - Moving to: %s" % (datetime.utcnow().isoformat(),os.getcwd()))
 			t=sorted(g.glob('*.png'))
 			if len(t) == 0:
 				os.chdir('../')
-				logger.info("Moving to: " + os.getcwd())
+				logger.info("%s - Moving to: %s" % (datetime.utcnow().isoformat(),os.getcwd()))
 				continue
-			
 			x=getDatetime(t[0])				
 			t_refs.append(x)
 			imlens.append(len(t))
 			das_tracker.append(das[i])
 			noimages+=1
-			
 			os.chdir('../')
-			logger.info("Moving to: " + os.getcwd())
+			logger.info("%s - Moving to: %s" % (datetime.utcnow().isoformat(),os.getcwd()))
 	
-	# check for no data
-	# exit if so
+	# check for no data exit if so
 	if noimages == 0:
-		logger.fatal("No pngs found, exiting...")
+		logger.fatal("%s - No pngs found, exiting..." % (datetime.utcnow().isoformat()))
 		sys.exit(1)
 	
 	# list of earliest times per camera
@@ -249,7 +233,7 @@ def make_montage(movie_dir,das):
 	n=np.where(t_refs==min(t_refs))[0]
 	if len(n) > 1:
 		n=n[0]
-	logger.info("Reference DAS machine: " + das_tracker[n])
+	logger.info("%s - Reference DAS machine: %s" % (datetime.utcnow().isoformat(),das_tracker[n]))
 
 	##############################
 	# start in earliest folder and
@@ -257,7 +241,7 @@ def make_montage(movie_dir,das):
 	##############################	
 	
 	os.chdir(das_tracker[n])
-	logger.info("Moving to: " + os.getcwd())
+	logger.info("%s - Moving to: %s" % (datetime.utcnow().isoformat(),os.getcwd()))
 
 	# these are the time slots, match the other images to start with a certain slot
 	slots=np.arange(0,imlens[n],1)
@@ -270,7 +254,7 @@ def make_montage(movie_dir,das):
 		t_refs.append(x)
 	
 	os.chdir('../')
-	logger.info("Moving to: " + os.getcwd())
+	logger.info("%s - Moving to: %s" % (datetime.utcnow().isoformat(),os.getcwd()))
 	
 	
 	##############################
@@ -281,12 +265,12 @@ def make_montage(movie_dir,das):
 	for i in das:
 		if das[i] != None:
 			os.chdir(das[i])
-			logger.info("Moving to: " + os.getcwd())
+			logger.info("%s - Moving to: %s" % (datetime.utcnow().isoformat(),os.getcwd()))
 			
 			t=sorted(g.glob('*.png'))
 			if len(t) == 0:
 				os.chdir('../')
-				logger.info("Moving to: " + os.getcwd())
+				logger.info("%s - Moving to: %s" % (datetime.utcnow().isoformat(),os.getcwd()))
 				continue
 				
 			x=getDatetime(t[0])	
@@ -298,9 +282,9 @@ def make_montage(movie_dir,das):
 			start_id[i]=z
 			
 			os.chdir('../')
-			logger.info("Moving to: " + os.getcwd())
+			logger.info("%s - Moving to: %s" % (datetime.utcnow().isoformat(),os.getcwd()))
 	
-	logger.info("Dictionary of start_ids:")
+	logger.info("%s - Dictionary of start_ids:" % (datetime.utcnow().isoformat()))
 	logger.info(start_id)
 	
 	##############################
@@ -335,7 +319,6 @@ def make_montage(movie_dir,das):
 	
 	for i in range(0,run_len):
 		files=""
-		
 		for j in das:
 			if i==0:
 				if das[j] != None:
@@ -351,11 +334,11 @@ def make_montage(movie_dir,das):
 				except IndexError:
 					files=files+"empty/empty.png "
 					
-		logger.debug("[%d/%d] %s" % (i+1,run_len,files))
+		logger.debug("%s - [%d/%d] %s" % (datetime.utcnow().isoformat(),i+1,run_len,files))
 		
 		# now montage them together
 		comm="/usr/local/bin/montage %s -tile 6x2 -geometry 400x300-80+3 tiled_%05d.png" % (files,i)
-		logger.debug(comm)
+		logger.debug("%s - %s" % (datetime.utcnow().isoformat(),comm))
 		os.system(comm)
 
 
@@ -375,16 +358,19 @@ def main():
 			if ' 0% packet loss' in x[-2]:
 				cont+=0
 			else:
-				cont+=1
-				
+				cont+=1			
 	if cont > 0:
-		logger.fatal("MACHINES ARE DOWN - ignoring image generation (NFS issues)")
+		logger.fatal("%s - MACHINES ARE DOWN - ignoring image generation (NFS issues?)" % (datetime.utcnow().isoformat()))
 		sys.exit(1)
 	
 	# get time of start
 	t1=datetime.datetime.utcnow()
 			
 	if args.pngs:
+		# remove any images from yesterday	
+		for i in das:
+			if das[i] != None:
+				os.system('/bin/rm %s/%s/IMAGE*.png' % (movie_dir,das[i]))
 		ex=0
 		# check the camera list
 		csplit=args.pngs.split(',')
@@ -395,9 +381,9 @@ def main():
 				if int(i) not in cams:
 					ex+=1			
 		if ex > 0:
-			logger.fatal("Problem in pngs...")
-			logger.fatal("Enter list like --pngs 801,802,803,...8[n]")
-			logger.fatal("Exiting...")
+			logger.fatal("%s - Problem in pngs..." % (datetime.utcnow().isoformat()))
+			logger.fatal("%s - Enter list like --pngs 801,802,803,...8[n]" % (datetime.utcnow().isoformat()))
+			logger.fatal("%s - Exiting..." % (datetime.utcnow().isoformat()))
 			sys.exit(1)
 		else:
 			make_pngs(args.pngs)	
@@ -406,11 +392,7 @@ def main():
 	if args.movie:
 		movie_date=(datetime.datetime.utcnow()-timedelta(days=1)).strftime('%Y%m%d')
 		movie_name="%s/daily_movies/movie_%s.mp4" % (movie_dir,movie_date)
-		make_movie(movie_dir,movie_name)
-		# send to warwick webserver
-		# this is now done with daily rsync of archive
-		#os.system('scp %s jmcc@ngts.warwick.ac.uk:/srv/www/ngts/ops/daily_movies/' % (movie_name))
-		
+		make_movie(movie_dir,movie_name)		
 		# clean up the pngs
 		if args.tidy:
 			os.system('/bin/rm %s/tiled*.png' % (movie_dir))
