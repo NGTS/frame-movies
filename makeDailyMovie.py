@@ -117,6 +117,7 @@ def getDasLoc():
 	'''
 	Find the camera/das locations
 	'''
+	logging.info("%s - Finding camera locations" % (datetime.utcnow().isoformat()))
 	for i in das:
 		if i != 899:
 			s=os.popen('/usr/local/paladin/bin/ngwhereis %d' % (i)).readline()
@@ -124,7 +125,7 @@ def getDasLoc():
 				das[i]=s.split()[0]
 			except IndexError:
 				das[i]=None
-			print s
+			logging.info("%s - %s" % (datetime.utcnow().isoformat(),s))
 
 def getLastNight():
 	'''
@@ -146,6 +147,7 @@ def make_pngs(clist):
 	
 	These will be removed each day once the movie is made
 	'''
+	logging.info("%s - Making pngs" % (datetime.utcnow().isoformat()))
 	db=pymysql.connect(host='ds',db='ngts_ops')
 	qry="SELECT action_id,camera_id,action FROM action_list WHERE night=%d" % (getLastNight())
 	with db.cursor() as cur:
@@ -193,6 +195,7 @@ def make_montage(movie_dir,das):
 	sync the pngs according to earliest image that day then
 	montage all the pngs with imagemagick
 	'''
+	logging.info("%s - Making montage" % (datetime.utcnow().isoformat()))
 	if os.path.exists(movie_dir) == False:
 		os.mkdir(movie_dir)
 	os.chdir(movie_dir)		
@@ -351,19 +354,22 @@ def make_movie(movie_dir,movie):
 	'''
 	Make a movie of the montaged images
 	'''
+	logging.info("%s - Making movie" % (datetime.utcnow().isoformat()))
 	generate_movie(movie_dir,movie)
 	
 def upload2youtube(filename,title):
 	'''
 	Upload the movie to YouTube using the OAuth setup for NGTS-OPS user channel
 	'''
+	logging.info("%s - Uploading video to YouTube" % (datetime.utcnow().isoformat()))
 	video_id=os.popen("python upload2youtube.py --file=%s --title=%s --description='NGTS Daily Movie' --category='22' --privacyStatus='unlisted'"% (filename,title)).readlines()[1].split()[2].replace("'","")
-	logging.info("%s - %s" % (datetime.utcnow().isoformat(),video_id))
+	logging.info("%s - Video ID: %s" % (datetime.utcnow().isoformat(),video_id))
 	return video_id
 
 def logVideoId(video_id,night):
 	db=pymysql.connect(host='ds',db='ngts_ops')
 	qry="INSERT INTO daily_movies (night,youtube_id) VALUES (%d,'%s')" % (night,video_id)
+	logging.info("%s - Logging video ID" % (datetime.utcnow().isoformat()))
 	logging.info("%s - %s" % (datetime.utcnow().isoformat(),qry))
 	with db.cursor() as cur:
 		cur.execute()
@@ -380,6 +386,7 @@ def makeSummaryTable(htmlname):
 	db=pymysql.connect(host='ds',db='ngts_ops')
 	qry="SELECT night,youtube_id FROM daily_movies"
 	night,youtube_id=[],[]
+	logging.info("%s - Making video summary table" % (datetime.utcnow().isoformat()))
 	logging.info("%s - %s" % (datetime.utcnow().isoformat(),qry))
 	with db.cursor() as cur:
 		cur.execute()
@@ -456,9 +463,8 @@ def main():
 			makeSummaryTable(video_summary_file)
 
 	t2=datetime.datetime.utcnow()
-	dt=(t2-t1).total_seconds()/60.
-	
-	print "Runtime: %.2f mins" % (dt) 
+	dt=(t2-t1).total_seconds()/60.	
+	logging.info("%s - Runtime: %.2f mins" % (datetime.utcnow().isoformat(),dt))
 	
 if __name__=='__main__':
 	main()			
