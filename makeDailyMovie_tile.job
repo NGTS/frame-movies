@@ -4,8 +4,8 @@
 #$ -m abe
 #$ -hold_jid pngs801,pngs802,pngs803,pngs804,pngs805,pngs806,pngs807,pngs808,pngs809,pngs810,pngs811,pngs812
 #$ -r y
-#$ -o /usr/local/cron/logs/makeDailyMovie_tile.log
-#$ -e /usr/local/cron/logs/makeDailyMovie_tile.log
+#$ -o /ngts/staging/archive/logs/movie/makeDailyMovie_tile.log
+#$ -e /ngts/staging/archive/logs/movie/makeDailyMovie_tile.log
 echo "Start - `date`"
 /usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --montage
 echo "Finish - `date`"
