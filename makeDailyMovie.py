@@ -422,13 +422,8 @@ def main():
 		sys.exit(1)
 	
 	# get time of start
-	t1=datetime.utcnow()
-			
+	t1=datetime.utcnow()		
 	if args.pngs:
-		# remove any images from yesterday	
-		for i in das:
-			if das[i] != None:
-				os.system('/bin/rm %s/%s/IMAGE*.png' % (movie_dir,das[i]))
 		ex=0
 		# check the camera list
 		csplit=args.pngs.split(',')
