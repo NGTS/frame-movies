@@ -185,7 +185,7 @@ def getDatetime(t):
 	hchk=int(t[16:18])
 	minchk=int(t[18:20])
 	schk=int(t[20:22])
-	x=datetime.datetime(year=ychk,month=mthchk,
+	x=datetime(year=ychk,month=mthchk,
 		day=dchk,hour=hchk,minute=minchk,second=schk)
 	return x
 	
