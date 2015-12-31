@@ -422,7 +422,7 @@ def main():
 		sys.exit(1)
 	
 	# get time of start
-	t1=datetime.datetime.utcnow()
+	t1=datetime.utcnow()
 			
 	if args.pngs:
 		# remove any images from yesterday	
@@ -448,7 +448,7 @@ def main():
 	if args.montage:
 		make_montage(movie_dir,das)
 	if args.movie:
-		movie_date=(datetime.datetime.utcnow()-timedelta(days=1)).strftime('%Y%m%d')
+		movie_date=(datetime.utcnow()-timedelta(days=1)).strftime('%Y%m%d')
 		movie_name="%s/daily_movies/movie_%s.mp4" % (movie_dir,movie_date)
 		make_movie(movie_dir,movie_name)		
 		# clean up the pngs
@@ -462,7 +462,7 @@ def main():
 			logVideoId(video_id,night)
 			makeSummaryTable(video_summary_file)
 
-	t2=datetime.datetime.utcnow()
+	t2=datetime.utcnow()
 	dt=(t2-t1).total_seconds()/60.	
 	logging.info("%s - Runtime: %.2f mins" % (datetime.utcnow().isoformat(),dt))
 	
