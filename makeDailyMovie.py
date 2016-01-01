@@ -384,7 +384,7 @@ def wrapRow(elements):
 
 def makeSummaryTable(htmlname):
 	db=pymysql.connect(host='ds',db='ngts_ops')
-	qry="SELECT night,youtube_id FROM daily_movies"
+	qry="SELECT night,youtube_id FROM daily_movies ORDER BY night DESC"
 	night,youtube_id=[],[]
 	logging.info("%s - Making video summary table" % (datetime.utcnow().isoformat()))
 	logging.info("%s - %s" % (datetime.utcnow().isoformat(),qry))
