@@ -30,6 +30,8 @@
 #	factor in 813
 #	install bz2 at paranal
 #	add checks for failed movie yesterday
+#	add movie making status to web page
+#	debug uploading
 #
 
 import os, os.path, datetime, sys, time, logging
@@ -362,7 +364,8 @@ def upload2youtube(filename,title):
 	Upload the movie to YouTube using the OAuth setup for NGTS-OPS user channel
 	'''
 	logging.info("%s - Uploading video to YouTube" % (datetime.utcnow().isoformat()))
-	video_id=os.popen("python upload2youtube.py --file=%s --title=%s --description='NGTS Daily Movie' --category='22' --privacyStatus='unlisted'"% (filename,title)).readlines()[1].split()[2].replace("'","")
+	v_id=os.popen("python upload2youtube.py --file=%s --title=%s --description='NGTS Daily Movie' --category='22' --privacyStatus='unlisted'"% (filename,title)).readlines()
+	video_id=v_id[1].split()[2].replace("'","")
 	logging.info("%s - Video ID: %s" % (datetime.utcnow().isoformat(),video_id))
 	return video_id
 
@@ -372,12 +375,12 @@ def logVideoId(video_id,night):
 	logging.info("%s - Logging video ID" % (datetime.utcnow().isoformat()))
 	logging.info("%s - %s" % (datetime.utcnow().isoformat(),qry))
 	with db.cursor() as cur:
-		cur.execute()
+		cur.execute(qry)
 		db.commit()
 	db.close()
 
 def Td(text, class_id, width):
-  return "<td class=%s width=%d>%s</td>" % (class_id,width,text)
+	return "<td class=%s width=%d>%s</td>" % (class_id,width,text)
 
 def wrapRow(elements):
 	return "<tr>%s</tr>\n" % (elements)
@@ -389,7 +392,7 @@ def makeSummaryTable(htmlname):
 	logging.info("%s - Making video summary table" % (datetime.utcnow().isoformat()))
 	logging.info("%s - %s" % (datetime.utcnow().isoformat(),qry))
 	with db.cursor() as cur:
-		cur.execute()
+		cur.execute(qry)
 		for row in cur:
 			night.append(row[0])
 			youtube_id.append(row[1])
@@ -407,7 +410,8 @@ def makeSummaryTable(htmlname):
 def main():	
 	args=argParse()
 	getDasLoc()
-	night=getLastNight()	
+	night=getLastNight()
+	movie_name="%s/daily_movies/movie_%d.mp4" % (movie_dir,night)	
 	# check all machines are up
 	cont=0
 	for i in das:
@@ -443,16 +447,19 @@ def main():
 	if args.montage:
 		make_montage(movie_dir,das)
 	if args.movie:
-		movie_date=(datetime.utcnow()-timedelta(days=1)).strftime('%Y%m%d')
-		movie_name="%s/daily_movies/movie_%s.mp4" % (movie_dir,movie_date)
 		make_movie(movie_dir,movie_name)		
 		# clean up the pngs
-		if args.tidy:
+		if args.tidy and os.path.exists(movie_name):
+			logging.info("%s - Removing tiled pngs" % (datetime.utcnow().isoformat()))
 			os.system('/bin/rm %s/tiled*.png' % (movie_dir))
+		if os.path.exists(movie_name) == False:
+			logging.fatal("%s - NO MOVIE FILE! QUITTING" % (datetime.utcnow().isoformat()))
+			sys.exit(1)
 		for i in das:
-			if das[i] != None and args.tidy:
+			if das[i] != None and args.tidy and os.path.exists(movie_name):
+				logging.info("%s - Removing individual pngs" % (datetime.utcnow().isoformat()))
 				os.system('/bin/rm %s/%s/IMAGE*.png' % (movie_dir,das[i]))
-		if args.upload:
+		if args.upload and os.path.exists(movie_name):
 			video_id=upload2youtube(movie_name,night)
 			logVideoId(video_id,night)
 			makeSummaryTable(video_summary_file)
