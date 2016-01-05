@@ -409,6 +409,9 @@ def main():
 	getDasLoc()
 	night=getLastNight()
 	movie_name="%s/daily_movies/movie_%d.mp4" % (movie_dir,night)	
+	
+	# get time of start
+	t1=datetime.utcnow()
 	# check all machines are up
 	cont=0
 	for i in das:
@@ -420,10 +423,7 @@ def main():
 				cont+=1			
 	if cont > 0:
 		logging.fatal("%s - MACHINES ARE DOWN - ignoring image generation (NFS issues?)" % (datetime.utcnow().isoformat()))
-		sys.exit(1)
-	
-	# get time of start
-	t1=datetime.utcnow()		
+		sys.exit(1)		
 	if args.pngs:
 		ex=0
 		# check the camera list
@@ -456,10 +456,13 @@ def main():
 			if das[i] != None and args.tidy and os.path.exists(movie_name):
 				logging.info("%s - Removing individual pngs" % (datetime.utcnow().isoformat()))
 				os.system('/bin/rm %s/%s/IMAGE*.png' % (movie_dir,das[i]))
-		if args.upload and os.path.exists(movie_name):
+	if args.upload and os.path.exists(movie_name):
+		if os.path.exists(movie_name):
 			video_id=upload2youtube(movie_name,night)
 			logVideoId(video_id,night)
 			makeSummaryTable(video_summary_file)
+		else:
+			logging.fatal("%s - No such movie file: %s" % (datetime.utcnow().isoformat(),movie_name))
 
 	t2=datetime.utcnow()
 	dt=(t2-t1).total_seconds()/60.	

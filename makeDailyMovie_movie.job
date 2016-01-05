@@ -7,5 +7,5 @@
 #$ -o /ngts/staging/archive/logs/movie/makeDailyMovie_movie.log
 #$ -e /ngts/staging/archive/logs/movie/makeDailyMovie_movie.log
 echo "Start - `date`"
-/usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --movie --tidy --upload
+/usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --movie --tidy
 echo "Finish - `date`"
