@@ -154,7 +154,7 @@ def makePNGs():
 	os.chdir(w_dir)
 	logging.info('%s Moving to %s' % (dt.utcnow().isoformat(),w_dir))	
 	
-	qry="SELECT action_id,image_id,camera_id FROM mini_survey WHERE done=1 AND astrometry=1 AND png=0"
+	qry="SELECT action_id,image_id,camera_id FROM mini_survey WHERE done=1 AND astrometry>0 AND png=0"
 	logging.info('%s %s' % (dt.utcnow().isoformat(),qry))
 	cur=db.cursor()
 	cur2=db.cursor()
