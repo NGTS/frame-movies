@@ -138,7 +138,7 @@ def checkAstrometry():
 				os.system('mv *%s* junk/' % (i))
 			else:
 				logging.info("%s IMAGE%s.fits solved with error of %.2f arcmin" % (dt.utcnow().isoformat(),i,sep_ang))
-				qry="UPDATE mini_survey SET astrometry=1 WHERE image_id='%s'" % (i)
+				qry="UPDATE mini_survey SET astrometry=2 WHERE image_id='%s'" % (i)
 			
 		if not args.debug:
 			cur.execute(qry)
