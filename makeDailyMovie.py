@@ -353,9 +353,14 @@ def make_movie(movie_dir,movie):
 	'''
 	Make a movie of the montaged images
 	'''
-	logging.info("%s - Making movie" % (datetime.utcnow().isoformat()))
-	generate_movie(movie_dir,movie)
-	
+	t=g.glob('%s/tiled*.png' % (movie_dir))
+	if len(t)>0:
+		logging.info("%s - Making movie" % (datetime.utcnow().isoformat()))
+		generate_movie(movie_dir,movie)
+	else:
+		logging.info("%s - No tiled images, skipping" % (datetime.utcnow().isoformat()))
+		sys.exit(1)
+		
 def upload2youtube(filename,title):
 	'''
 	Upload the movie to YouTube using the OAuth setup for NGTS-OPS user channel
