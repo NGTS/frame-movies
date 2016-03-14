@@ -131,7 +131,7 @@ def getLastNight():
 	Get the night int for last night
 	'''
 	tnow=datetime.utcnow()
-	if tnow.hour < 16:
+	if tnow.hour < 18:
 		delta=-1
 	else:
 		delta=0
