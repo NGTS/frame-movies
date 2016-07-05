@@ -148,6 +148,7 @@ def checkAstrometry():
     os.chdir(here)
     logging.info('%s Returning to %s' % (dt.utcnow().isoformat(),here)) 
     cur.close()
+    return fails
 
 def makePNGs():
     here=os.getcwd()
@@ -180,13 +181,9 @@ def makePNGs():
     os.chdir(here)
     logging.info('%s Returning to %s' % (dt.utcnow().isoformat(),here)) 
     cur.close()
-    
-def main():
-    checkAstrometry()
-    makePNGs()
-    db.close()
-    
 
 if __name__=="__main__":
-    main()
+    fails=checkAstrometry()
+    makePNGs()
+    db.close()
     
