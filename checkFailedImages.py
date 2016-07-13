@@ -5,12 +5,12 @@
 #   Sanity check all the image_ids in the table actually have a png
 #   quick check shows 1349 in DB and 1353 pngs, 4 out, not bad
 #
-
+from create_movie import create_movie
 import os,sys,getpass,time
 import glob as g
 from astropy.io import fits
 from collections import defaultdict
-from ds9 import *
+import pyds9
 import argparse as ap
 
 me=getpass.getuser()
@@ -21,12 +21,12 @@ elif me=='James':
     w_dir='/Users/James/Desktop/junk'
     astrom_loc="/usr/local/bin/"
 else:
-    print "WHOAMI?"
+    print("WHOAMI?")
     sys.exit(1)
 
 # check for w_dir
 if os.path.exists(w_dir)==False:
-    print "I'm dying... (no w_dir)"
+    print("I'm dying... (no w_dir)")
     sys.exit(1)
 
 # get command line args
@@ -64,6 +64,7 @@ def astrometry(image,scale_l,scale_h,ra=None,dec=None,radius=5.0,cpulimit=90):
     return ra,dec
 
 args=argParse()
+os.chdir(w_dir)
 t=sorted(g.glob('*.fits'))
 
 if args.astrometry:
@@ -86,23 +87,23 @@ if args.manual:
         h=fits.open(i)[0].header['FIELD']
         fields[h].append(i)
 
-    d=ds9()
+    d=pyds9.DS9()
     time.sleep(5)
     d.set('scale zscale')
     d.set('preserve scale')
     d.set('preserve pan')
 
-    print "Remeber to DELETE duplicate images"
+    print("Remeber to DELETE duplicate images")
     rm_string=""
     for i in fields:
-        d.set('frame clear all')
         image=fields[i][-1]
+        d.set('frame clear all')
         h=fits.open(image)[0]
         ra=h.header['CMD_RA']
         dec=h.header['CMD_DEC']
 
         # print this so we can see which have duplicates to delete
-        print fields[i]
+        print(fields[i])
         if len(fields[i])>1:
             for k in range(0,len(fields[i])-1):
                 rm_string=rm_string+"%s " % (fields[i][k])
@@ -125,22 +126,21 @@ if args.manual:
         if args.yes2all:
             done[i].append(image)
         else:
-            yn=raw_input("Do the fields match? (y/n): ")
+            yn=input("Do the fields match? (y/n): ")
             if yn.lower().startswith('y'):
                 done[i].append(image)
             else:
                 continue
-    print rm_string
+    print(rm_string)
 
     # need to make an astrometry* log file for the manually solved images?
     # and also a png too, then update the database as with the others, manually?
     table_update_string=""
     if len(done)> 0:
-        from create_movie import create_movie
-        print "Check the UPDATE strings as use them to UPDATE the minisurvey table"
+        print("Check the UPDATE strings as use them to UPDATE the minisurvey table")
         for i in done:
             create_movie(done[i],images_directory="%s/" % (w_dir),no_time_series=True,include_increment=False,clobber_images_directory=False,resize_factor=4,multiprocess=False)
             table_update_string=table_update_string+"UPDATE mini_survey SET checked_out=0,astrometry=1,done=1,png=1,fails=0 where image_id=\"%s\";\n" % (done[i][0][5:-5]) # image name minus IMAGE and .fits       
 
-        print table_update_string
+        print(table_update_string)
 
