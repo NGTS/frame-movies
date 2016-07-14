@@ -1,7 +1,12 @@
 
 import os,pymysql
+import sys
 
-night=20160711
+if len(sys.argv) < 2:
+    print('USAGE: python manual_upload.py YYYYMMD')
+    sys.exit(1)
+
+night=int(sys.argv[1])
 video_summary_file="/ngts/staging/archive/movie/daily_movies/daily_movies.html"
 movie_dir="/ngts/staging/archive/movie/"
 movie_name="%s/daily_movies/movie_%d.mp4" % (movie_dir,night)
