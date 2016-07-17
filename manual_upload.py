@@ -1,4 +1,4 @@
-
+#!/usr/local/python/bin/python
 import os,pymysql
 import sys
 
