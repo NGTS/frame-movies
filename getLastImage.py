@@ -97,8 +97,13 @@ for cam in cams:
     if len(cams[cam]) > 0 and cam != 899:
         # go into the last action directory
         if das[cam] != None:
-            os.chdir("%s/%s" % (das[cam], cams[cam][-1]))
-            logger.info("Moving to %s/%s" % (das[cam], cams[cam][-1]))
+            try:
+                os.chdir("%s/%s" % (das[cam], cams[cam][-1]))
+                logger.info("Moving to %s/%s" % (das[cam], cams[cam][-1]))
+            except OSError:
+                print('Folder %s/%s does not exist, skipping...' % (das[cam], cams[cam][-1]))
+                continue
+
             # get the last image
             t = sorted(g.glob('*.fits'))
             if len(t) > 0:
