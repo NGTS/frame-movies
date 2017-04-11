@@ -83,6 +83,7 @@ for cam in cams:
         LEFT JOIN action_list
         USING (action_id)
         WHERE raw_image_list.camera_id=%d
+        AND start_time_utc >= now() - INTERVAL 1 DAY
         ORDER BY image_id DESC LIMIT 1
         """ % (cam)
     cur.execute(qry)
