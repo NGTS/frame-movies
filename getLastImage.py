@@ -70,30 +70,31 @@ if cont > 0:
     logger.fatal("MACHINES ARE DOWN - ignoring image generation (NFS issues)")
     sys.exit(1)
 
-# connect to database
-conn = pymysql.connect(host='ds', db='ngts_ops')
-cur = conn.cursor()
 os.chdir(topdir)
 for cam in cams:
-    qry = """
-        SELECT
-        image_id, raw_image_list.camera_id,
-        raw_image_list.action_id, action
-        FROM raw_image_list
-        LEFT JOIN action_list
-        USING (action_id)
-        WHERE raw_image_list.camera_id=%d
-        AND start_time_utc >= now() - INTERVAL 1 DAY
-        ORDER BY image_id DESC LIMIT 1
-        """ % (cam)
-    cur.execute(qry)
-    # get the action ids for each camera (and dome 899)
-    for row in cur:
-        if row[3] != 'stow':
-            cams[row[1]].append("action%s_%s" % (row[2], row[3]))
-cur.close()
-conn.close()
+    with pymysql.connect(host='ds', db='ngts_ops') as cur:
+        qry = """
+            SELECT
+            image_id, raw_image_list.camera_id,
+            raw_image_list.action_id, action
+            FROM raw_image_list
+            LEFT JOIN action_list
+            USING (action_id)
+            WHERE raw_image_list.camera_id={}
+            AND start_time_utc >= now() - INTERVAL 1 DAY
+            ORDER BY image_id DESC LIMIT 1
+            """.format(cam)
+        logger.info(qry)
+        t1 = datetime.utcnow()
+        cur.execute(qry)
+        t2 = datetime.utcnow()
+        logger.info('Query took: {:.2f}s'.format((t2-t1).total_seconds()))
+        # get the action ids for each camera (and dome 899)
+        for row in cur:
+            if row[3] != 'stow':
+                cams[row[1]].append("action%s_%s" % (row[2], row[3]))
 
+# loop over each camera and make the pngs
 for cam in cams:
     if len(cams[cam]) > 0 and cam != 899:
         # go into the last action directory
