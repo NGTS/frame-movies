@@ -8,6 +8,7 @@ import os
 import sys
 import glob as g
 import getpass
+from datetime import datetime
 import pymysql
 from create_movie import (
     create_movie,
