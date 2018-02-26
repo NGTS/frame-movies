@@ -3,6 +3,7 @@
 #$ -N pngs808
 #$ -m abe
 #$ -r y
+#$ -q das
 #$ -o /ngts/staging/archive/logs/movie/makeDailyMovie_pngs808.log
 #$ -e /ngts/staging/archive/logs/movie/makeDailyMovie_pngs808.log
 echo "Start - `date`"
