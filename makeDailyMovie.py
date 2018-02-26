@@ -1,7 +1,9 @@
 #!/usr/local/python/bin/python
+"""
+TODO: Add docstring
+"""
 import os
 import sys
-import time
 import logging
 import argparse as ap
 import glob as g
@@ -15,6 +17,10 @@ from create_movie import (
     create_movie,
     generate_movie
     )
+
+# pylint: disable=logging-format-interpolation
+# pylint: disable=invalid-name
+# pylint: disable=redefined-outer-name
 
 movie_dir = "/ngts/staging/archive/movie"
 logfile = "/ngts/staging/archive/logs/movie/"
@@ -56,7 +62,7 @@ def getLastNight():
     """
     tnow = datetime.utcnow()
     if tnow.hour < 18:
-        delta=-1
+        delta = -1
     else:
         delta = 0
     return int((tnow + delta*timedelta(days=1)).strftime('%Y%m%d'))
@@ -105,10 +111,10 @@ def make_pngs(movie_dir, actions, das_id):
                              resize_factor=4)
 
 def getDatetime(t):
-    '''
+    """
     get the date and time from a raw image filename
     and create a datetime variable
-    '''
+    """
     ychk = int(t[8:12])
     mthchk = int(t[12:14])
     dchk = int(t[14:16])
@@ -161,8 +167,6 @@ def make_montage(movie_dir, das_list, start_id):
     # start in earliest folder and generate a list of reference times
     os.chdir(das_list[n])
     logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
-    # these are the time slots, match the other images to start with a certain slot
-    slots = np.arange(0, imlens[n], 1)
     # reset t_refs for start_id calculations
     t = sorted(g.glob('*.png'))
     t_refs = []
@@ -185,7 +189,7 @@ def make_montage(movie_dir, das_list, start_id):
         for j in range(0, len(t_refs)):
             diff.append(abs((t_refs[j] - x).total_seconds()))
         z = diff.index(min(diff))
-        start_id[i] = z
+        start_id[das] = z
         os.chdir('../')
         logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
     logging.info("{} - Dictionary of start_ids:".format(nowstr()))
@@ -245,7 +249,8 @@ def upload2youtube(filename, title):
     v_id = os.popen("/usr/local/python/bin/python " \
                     "/usr/local/cron/scripts/upload2youtube.py " \
                     "--file={} --title={} --description='NGTS Daily Movie'" \
-                    "--category='22' --privacyStatus='unlisted'".format(filename, title)).readlines()
+                    "--category='22' " \
+                    "--privacyStatus='unlisted'".format(filename, title)).readlines()
     video_id = v_id[1].split()[2].replace("'", "")
     logging.info("{} - Video ID: {}".format(nowstr(), video_id))
     return video_id
@@ -271,51 +276,52 @@ def nowstr():
     """
     return datetime.utcnow().replace(microsecond=0).isoformat()
 
-if __name__=='__main__':
+if __name__ == "__main__":
     # get time of start
     t1 = datetime.utcnow()
+    # parse command line
+    args = argParse()
     # get a list of das machines
     das_list = getDasList()
-    # empty dictionary for the actions for each camera
-    cams = {key: [] for key in range(801, 814)}
-    # set the key to the das machines for each camera
-    das = {key: None for key in range(801, 814)}
     # start id for movie
     start_id = {key: -1 for key in das_list}
-
-    args = argParse()
+    # get last night
     night = getLastNight()
-    movie_name = "{}/daily_movies/movie_{}.mp4".format(movie_dir, night)
+    # check the move dir exists
     if not os.path.exists(movie_dir):
         os.mkdir(movie_dir)
-
+    # make pngs
     if args.pngs:
         actions = getActionsToProcess(night)
         make_pngs(movie_dir, args.pngs, night)
+    # montage pngs
     if args.montage:
         make_montage(movie_dir, das_list, start_id)
+    # make movie of montages and tidy up
     if args.movie:
+        # set up the movie outpout name
+        movie_name = "{}/daily_movies/movie_{}.mp4".format(movie_dir, night)
         make_movie(movie_dir, movie_name)
+        # check tge movie exists before wiping the pngs
+        if not os.path.exists(movie_name):
+            logging.fatal("{} - NO MOVIE FILE! QUITTING".format(nowstr()))
+            # TODO : send an email here!
+            sys.exit(1)
         # clean up the pngs
         if args.tidy and os.path.exists(movie_name):
-            logging.info("%s - Removing tiled pngs" % (datetime.utcnow().isoformat()))
-            os.system('/bin/rm %s/tiled*.png' % (movie_dir))
-        if os.path.exists(movie_name) == False:
-            logging.fatal("%s - NO MOVIE FILE! QUITTING" % (datetime.utcnow().isoformat()))
-            sys.exit(1)
-        for i in das:
-            if das[i] != None and args.tidy and os.path.exists(movie_name):
-                logging.info("%s - Removing individual pngs" % (datetime.utcnow().isoformat()))
-                os.system('/bin/rm %s/%s/IMAGE*.png' % (movie_dir,das[i]))
+            logging.info("{} - Removing tiled pngs".format(nowstr()))
+            os.system("/bin/rm {}/tiled*.png".format(movie_dir))
+            for das in das_list:
+                logging.info("{} - Removing individual pngs".format(nowstr()))
+                os.system("/bin/rm %s/%s/IMAGE*.png" % (movie_dir, das))
+    # upload to youtube
     if args.upload and os.path.exists(movie_name):
         if os.path.exists(movie_name):
-            video_id=upload2youtube(movie_name,night)
-            logVideoId(video_id,night)
-            makeSummaryTable(video_summary_file)
+            video_id = upload2youtube(movie_name, night)
+            logVideoId(video_id, night)
         else:
-            logging.fatal("%s - No such movie file: %s" % (datetime.utcnow().isoformat(),movie_name))
-
-    t2=datetime.utcnow()
-    dt=(t2-t1).total_seconds()/60.  
-    logging.info("%s - Runtime: %.2f mins" % (datetime.utcnow().isoformat(),dt))
-    
+            logging.fatal("{} - No such movie file: {}".format(nowstr(), movie_name))
+    # some final stats
+    t2 = datetime.utcnow()
+    dt = (t2-t1).total_seconds()/60.
+    logging.info("{} - Runtime: {:.2f} mins".format(nowstr(), dt))
