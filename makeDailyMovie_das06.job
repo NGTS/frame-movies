@@ -1,0 +1,12 @@
+#!/bin/tcsh
+#$ -M ngtsops@warwick.ac.uk
+#$ -N pngs_das06
+#$ -m abe
+#$ -r y
+#$ -q das
+#$ -l h=ngts-par-das-06
+#$ -o /ngts/staging/archive/logs/movie/makeDailyMovie_pngs_das06.log
+#$ -e /ngts/staging/archive/logs/movie/makeDailyMovie_pngs_das06.log
+echo "Start - `date`"
+/usr/local/python/bin/python /usr/local/cron/scripts/makeDailyMovie.py --pngs das06
+echo "Finish - `date`"
