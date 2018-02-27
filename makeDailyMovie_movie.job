@@ -5,6 +5,7 @@
 #$ -hold_jid tile
 #$ -r y
 #$ -q das
+#$ -l h=ngts-par-das-02
 #$ -o /ngts/staging/archive/logs/movie/makeDailyMovie_movie.log
 #$ -e /ngts/staging/archive/logs/movie/makeDailyMovie_movie.log
 echo "Start - `date`"
