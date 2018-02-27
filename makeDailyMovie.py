@@ -295,7 +295,7 @@ if __name__ == "__main__":
     # make pngs
     if args.pngs:
         actions = getActionsToProcess(night)
-        make_pngs(movie_dir, args.pngs, night)
+        make_pngs(movie_dir, actions, args.pngs)
     # montage pngs
     if args.montage:
         make_montage(movie_dir, das_list, start_id)
