@@ -101,7 +101,9 @@ def make_pngs(movie_dir, actions, das_id):
     # only make the pngs for the local images
     for action in actions:
         if os.path.exists("/local/{}".format(action)):
+            print(action)
             imglist = sorted(g.glob("/local/{}/*.fits".format(action)))
+            print(imlist)
             if imglist:
                 das_movie_dir = "{}/{}".format(movie_dir, das_id)
                 create_movie(imglist,
