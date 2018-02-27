@@ -298,10 +298,10 @@ if __name__ == "__main__":
     # montage pngs
     if args.montage:
         make_montage(movie_dir, das_list, start_id)
+    # set up the movie outpout name
+    movie_name = "{}/daily_movies/movie_{}.mp4".format(movie_dir, night)
     # make movie of montages and tidy up
     if args.movie:
-        # set up the movie outpout name
-        movie_name = "{}/daily_movies/movie_{}.mp4".format(movie_dir, night)
         make_movie(movie_dir, movie_name)
         # check tge movie exists before wiping the pngs
         if not os.path.exists(movie_name):
