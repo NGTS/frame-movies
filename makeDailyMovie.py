@@ -249,7 +249,7 @@ def upload2youtube(filename, title):
     logging.info("{} - Uploading video to YouTube".format(nowstr()))
     v_id = os.popen("/usr/local/python/bin/python " \
                     "/usr/local/cron/scripts/upload2youtube.py " \
-                    "--file={} --title={} --description='NGTS Daily Movie'" \
+                    "--file={} --title={} --description='NGTS Daily Movie' " \
                     "--category='22' " \
                     "--privacyStatus='unlisted'".format(filename, title)).readlines()
     video_id = v_id[1].split()[2].replace("'", "")
