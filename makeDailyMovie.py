@@ -189,7 +189,10 @@ def make_montage(movie_dir, das_list, start_id):
         diff = []
         for j in range(0, len(t_refs)):
             diff.append(abs((t_refs[j] - x).total_seconds()))
-        z = diff.index(min(diff))
+        try:
+            z = diff.index(min(diff))
+        except ValueError:
+            z = -1
         start_id[das] = z
         os.chdir('../')
         logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
