@@ -140,7 +140,6 @@ def make_montage(movie_dir, das_list, start_id):
 
     # scan all folders looking for earliest image of the night
     n_images = 0
-    skipped_cameras = 0
     for das in das_list:
         os.chdir(das)
         logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
@@ -148,7 +147,6 @@ def make_montage(movie_dir, das_list, start_id):
         if not t:
             os.chdir('../')
             logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
-            skipped_cameras += 1
             continue
         t_refs.append(getDatetime(t[0]))
         imlens.append(len(t))
@@ -166,7 +164,7 @@ def make_montage(movie_dir, das_list, start_id):
     n = np.where(t_refs == min(t_refs))[0]
     if len(n) > 1:
         n = n[0]
-    logging.info("{} - Reference DAS machine: {}".format(nowstr(), das_list[n+skipped_cameras]))
+    logging.info("{} - Reference DAS machine: {}".format(nowstr(), das_list[n]))
     # start in earliest folder and generate a list of reference times
     os.chdir(das_list[n])
     logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
