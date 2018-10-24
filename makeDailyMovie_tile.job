@@ -5,7 +5,6 @@
 #$ -hold_jid pngs_das01,pngs_das02,pngs_das03,pngs_das04,pngs_das05,pngs_das06,pngs_das07,pngs_das08,pngs_das09,pngs_das10,pngs_das11,pngs_das12
 #$ -r y
 #$ -q das
-#$ -l h=ngts-par-ds
 #$ -o /ngts/staging/archive/logs/movie/makeDailyMovie_tile.log
 #$ -e /ngts/staging/archive/logs/movie/makeDailyMovie_tile.log
 echo "Start - `date`"
