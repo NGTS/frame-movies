@@ -133,7 +133,7 @@ def extract_image_data(input_fname):
     return header, image_data
 
 
-def build_image((i, input_fname), outdir, median_behaviour,
+def build_image(inp, outdir, median_behaviour,
                 frame_min=0.8,
                 frame_max=1.2,
                 nimages=None,
@@ -166,6 +166,7 @@ def build_image((i, input_fname), outdir, median_behaviour,
     :param nimages:
         Number of images in the complete set
     '''
+    i, input_fname = inp
     output_fname = construct_output_filename(outdir, input_fname, i,
                                              include_increment=include_increment)
     if nimages is None:
