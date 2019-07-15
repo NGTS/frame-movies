@@ -247,7 +247,7 @@ def upload2youtube(filename, title):
     Upload the movie to YouTube using the OAuth setup for NGTS-OPS user channel
     """
     logging.info("{} - Uploading video to YouTube".format(nowstr()))
-    v_id = os.popen("/usr/local/python/bin/python " \
+    v_id = os.popen("/usr/local/anaconda3/bin/python " \
                     "/usr/local/cron/scripts/upload2youtube.py " \
                     "--file={} --title={} --description='NGTS Daily Movie' " \
                     "--category='22' " \
