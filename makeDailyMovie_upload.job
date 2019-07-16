@@ -5,6 +5,7 @@
 #$ -hold_jid movie
 #$ -r y
 #$ -q das
+#$ -l h=ngts-par-ds
 #$ -o /ngts/staging/archive/logs/movie/makeDailyMovie_upload.log
 #$ -e /ngts/staging/archive/logs/movie/makeDailyMovie_upload.log
 echo "Start - `date`"
