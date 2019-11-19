@@ -7,12 +7,12 @@ import sys
 import logging
 import argparse as ap
 import glob as g
+from collections import OrderedDict
 from datetime import (
     datetime,
     timedelta
     )
 import pymysql
-import numpy as np
 from create_movie import (
     create_movie,
     generate_movie
@@ -127,7 +127,7 @@ def getDatetime(t):
                  minute=minchk, second=schk)
     return x
 
-def make_montage(movie_dir, das_list, start_id):
+def make_montage(movie_dir, das_list):
     """
     sync the pngs according to earliest image that day then
     montage all the pngs with imagemagick
@@ -136,93 +136,32 @@ def make_montage(movie_dir, das_list, start_id):
     os.chdir(movie_dir)
     logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
 
-    t_refs, imlens = [], []
-
-    # scan all folders looking for earliest image of the night
-    n_images = 0
+    # just get a list of all the images for all das machines
+    # we don't care about syncing them in time as its annoying and I
+    # don't have time to fix this now.
+    images = OrderedDict()
     for das in das_list:
-        os.chdir(das)
-        logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
-        t = sorted(g.glob('*.png'))
-        if not t:
-            os.chdir('../')
-            logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
-            continue
-        t_refs.append(getDatetime(t[0]))
-        imlens.append(len(t))
-        n_images += len(t)
-        os.chdir('../')
-        logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
-    # check for no data exit if so
-    if not n_images:
-        logging.fatal("{} - No pngs found, exiting...".format(nowstr()))
-        sys.exit(1)
-    # list of earliest times per camera and length of imaging run
-    t_refs = np.array(t_refs)
-    imlens = np.array(imlens)
-    # now work out which was the earliest and go there to start the time series
-    n = np.where(t_refs == min(t_refs))[0]
-    if len(n) > 1:
-        n = n[0]
-    logging.info("{} - Reference DAS machine: {}".format(nowstr(), das_list[n]))
-    # start in earliest folder and generate a list of reference times
-    os.chdir(das_list[n])
-    logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
-    # reset t_refs for start_id calculations
-    t = sorted(g.glob('*.png'))
-    t_refs = []
-    for i in range(0, len(t)):
-        t_refs.append(getDatetime(t[i]))
-    os.chdir('../')
-    logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
+        images[das] = g.glob('{}/*.png'.format(das))
 
-    # now go through each other dir and generate their starting points
+    # get the das machine with the max number of images
+    max_images = 0
     for das in das_list:
-        os.chdir(das)
-        logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
-        t = sorted(g.glob('*.png'))
-        if not t:
-            os.chdir('../')
-            logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
-            continue
-        x = getDatetime(t[0])
-        diff = []
-        for j in range(0, len(t_refs)):
-            diff.append(abs((t_refs[j] - x).total_seconds()))
-        z = diff.index(min(diff))
-        start_id[das] = z
-        os.chdir('../')
-        logging.info("{} - Moving to: {}".format(nowstr(), os.getcwd()))
-    logging.info("{} - Dictionary of start_ids:".format(nowstr()))
-    logging.info(start_id)
+        if len(images[das]) > max_images:
+            max_images = len(images[das])
 
-    # work out the new video size for non time overlapping images
-    max_start = 0
-    for i in start_id:
-        if start_id[i] > max_start:
-            max_start = start_id[i]
-    run_len = int(max(imlens) + max_start)
-
-    # montage based on start_ids
-    # keep a dictionary of the directory contents from
-    # first glob as to not check each time we loop around...
-    t = {das: [] for das in das_list}
-
-    for i in range(0, run_len):
+    # now loop max_images times
+    # grab an image from each das machine
+    # if that list gives an IndexError, fill
+    # it with a blank image
+    for i in range(0, max_images):
         files = ""
         for das in das_list:
-            if i == 0:
-                t[das].append(sorted(g.glob('{}/*.png'.format(das))))
+            try:
+                files += "{} ".format(images[das][i])
+            except IndexError:
+                files += "empty/empty.png "
 
-            if start_id[das] == -1 or i < start_id[das]:
-                files = files + "empty/empty.png "
-            else:
-                try:
-                    files = files + t[das][0][i - start_id[das]] + " "
-                except IndexError:
-                    files = files + "empty/empty.png "
-
-        logging.info("{} - [{}/{}] {}".format(nowstr(), i+1, run_len, files))
+        logging.info("{} - [{}/{}] {}".format(nowstr(), i+1, max_images, files))
 
         # now montage them together
         comm = "/usr/local/bin/montage {} -tile 6x2 -geometry " \
@@ -285,7 +224,7 @@ if __name__ == "__main__":
     # get a list of das machines
     das_list = getDasList()
     # start id for movie
-    start_id = {key: -1 for key in das_list}
+    #start_id = {key: -1 for key in das_list}
     # get last night
     night = getLastNight()
     # check the move dir exists
@@ -297,7 +236,8 @@ if __name__ == "__main__":
         make_pngs(movie_dir, actions, args.pngs)
     # montage pngs
     if args.montage:
-        make_montage(movie_dir, das_list, start_id)
+        #make_montage(movie_dir, das_list, start_id)
+        make_montage(movie_dir, das_list)
     # set up the movie outpout name
     movie_name = "{}/daily_movies/movie_{}.mp4".format(movie_dir, night)
     # make movie of montages and tidy up
