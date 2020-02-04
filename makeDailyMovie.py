@@ -141,7 +141,7 @@ def make_montage(movie_dir, das_list):
     # don't have time to fix this now.
     images = OrderedDict()
     for das in das_list:
-        images[das] = g.glob('{}/*.png'.format(das))
+        images[das] = sorted(g.glob('{}/*.png'.format(das)))
 
     # get the das machine with the max number of images
     max_images = 0
